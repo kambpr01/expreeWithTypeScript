@@ -125,8 +125,9 @@ async function getAllClaims() {
   console.log('\n--> Evaluate Transaction: getAllClaims, function returns all the current claims on the ledger');
 
   const resultBytes = await contract.evaluateTransaction('GetAllClaims');
-
+  console.log(resultBytes);
   const resultJson = utf8Decoder.decode(resultBytes);
+  console.log(resultJson);
   const result = JSON.parse(resultJson);
   return result;
 }
