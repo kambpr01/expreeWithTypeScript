@@ -98,10 +98,43 @@ async function initLedger() {
   return '*** Transaction committed successfully';
 }
 
+
+async function getAllClaims() {
+  const client = await newGrpcConnection();
+  const gateway = connect({
+    client,
+    identity: await newIdentity(),
+    signer: await newSigner(),
+    // Default timeouts for different gRPC calls
+    evaluateOptions: () => {
+      return { deadline: Date.now() + 5000 }; // 5 seconds
+    },
+    endorseOptions: () => {
+      return { deadline: Date.now() + 15000 }; // 15 seconds
+    },
+    submitOptions: () => {
+      return { deadline: Date.now() + 5000 }; // 5 seconds
+    },
+    commitStatusOptions: () => {
+      return { deadline: Date.now() + 60000 }; // 1 minute
+    },
+  });
+
+  const network = gateway.getNetwork(channelName);
+  const contract = network.getContract(chaincodeName);
+  console.log('\n--> Evaluate Transaction: getAllClaims, function returns all the current claims on the ledger');
+
+  const resultBytes = await contract.evaluateTransaction('GetAllClaims');
+
+  const resultJson = utf8Decoder.decode(resultBytes);
+  const result = JSON.parse(resultJson);
+  return result;
+}
+
 const app: Express = express();
 
 app.get('/', (req: Request, res: Response) => {
-  let resReceived = initLedger();
+  let resReceived = getAllClaims();
   res.send('Express + TypeScript Server' + resReceived);
 });
 
